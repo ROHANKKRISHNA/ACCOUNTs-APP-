@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1073002001160",
+    "project_id": "rohanaccounts-18a4d",
+    "storage_bucket": "rohanaccounts-18a4d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1073002001160:android:e831bb4ffeb307f6aff2bd",
+        "android_client_info": {
+          "package_name": "com.example.rohan_project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCDE9VYLiHtDlrE3fOJ-kB3XE9QDml0GKs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
