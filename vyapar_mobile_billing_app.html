@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vyapar & Billing Mobile App</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            red: '#D9251B',
+                            redDark: '#B81C13',
+                            blue: '#1A365D',
+                            emerald: '#059669',
+                            amber: '#D97706',
+                            bg: '#F3F4F6'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbar for clean mobile UI */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans antialiased select-none pb-20 md:pb-0 min-h-screen flex flex-col justify-between">
+
+    <!-- APP CONTAINER (Mobile Viewport Optimized) -->
+    <div class="max-w-md mx-auto w-full bg-slate-50 min-h-screen shadow-2xl flex flex-col relative overflow-hidden border-x border-gray-200">
+
+        <!-- 1. TOP HEADER BAR -->
+        <header class="bg-brand-red text-white p-3.5 sticky top-0 z-30 shadow-md">
+            <div class="flex items-center justify-between mb-2.5">
+                <div class="flex items-center space-x-2">
+                    <div class="bg-white/20 p-2 rounded-lg flex items-center justify-center">
+                        <i class="fa-solid font-bold fa-store text-lg text-white"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-1 cursor-pointer" onclick="showToast('Business Switching Ready')">
+                            <h1 class="font-bold text-base tracking-wide truncate max-w-[170px]" id="header-biz-name">My Business / Vyapar</h1>
+                            <i class="fa-solid fa-chevron-down text-xs opacity-80"></i>
+                        </div>
+                        <span class="text-[10px] bg-red-800/80 px-2 py-0.5 rounded-full font-medium text-red-100">GST: 27AABCU9639R1ZM</span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="showToast('Backup feature active')" class="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition" title="Sync Data">
+                        <i class="fa-solid fa-rotate text-sm"></i>
+                    </button>
+                    <button onclick="openModal('add-tx-modal')" class="p-2 rounded-full bg-white text-brand-red shadow font-bold hover:bg-gray-100 transition" title="Quick Invoice">
+                        <i class="fa-solid fa-plus text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Header Search Bar -->
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-400 text-xs"></i>
+                <input type="text" id="global-search" onkeyup="handleGlobalSearch()" placeholder="Search transactions, parties, items..." 
+                       class="w-full pl-8 pr-4 py-1.5 text-xs rounded-lg bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-300 shadow-inner">
+            </div>
+        </header>
+
+        <!-- MAIN VIEW CONTAINER -->
+        <main class="flex-1 overflow-y-auto p-3 space-y-4" id="main-content">
+
+            <!-- TAB 1: FAVOURITES (HOME SCREEN) -->
+            <section id="tab-home" class="space-y-4">
+                
+                <!-- Screen Header Label -->
+                <div class="flex justify-between items-center bg-white p-2.5 rounded-xl border border-gray-200 shadow-sm">
+                    <div class="flex items-center space-x-2">
+                        <span class="bg-amber-100 text-amber-600 p-1.5 rounded-md text-xs font-bold">
+                            <i class="fa-solid fa-star"></i>
+                        </span>
+                        <h2 class="font-bold text-sm text-gray-800 tracking-tight">FAVOURITES</h2>
+                    </div>
+                    <span class="text-[11px] text-gray-500 font-medium">Quick Billing Desk</span>
+                </div>
+
+                <!-- SECTION 1: TRANSACTIONS (Billing & Sales) -->
+                <div class="bg-white rounded-xl p-3 shadow-sm border border-gray-200">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-invoice text-brand-red"></i> 1) Transactions (Billing & Sales)
+                        </h3>
+                        <span class="text-[10px] text-gray-400">Shortcuts</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <!-- Sale Invoice -->
+                        <div class="p-2.5 rounded-xl bg-emerald-50/60 border border-emerald-100 hover:shadow-md transition flex flex-col justify-between">
+                            <div class="flex justify-between items-start">
+                                <span class="text-emerald-700 text-xs font-bold">Sale Invoice</span>
+                                <i class="fa-solid fa-file-arrow-up text-emerald-600 text-sm"></i>
+                            </div>
+                            <p class="text-[10px] text-gray-500 mt-1">Create bill for customer</p>
+                            <button onclick="openQuickTx('Sale')" class="mt-2 text-xs font-semibold bg-emerald-600 text-white py-1 rounded-md text-center hover:bg-emerald-700 active:scale-95 transition">
+                                + Add
+                            </button>
+                        </div>
+
+                        <!-- Purchase Invoice -->
+                        <div class="p-2.5 rounded-xl bg-blue-50/60 border border-blue-100 hover:shadow-md transition flex flex-col justify-between">
+                            <div class="flex justify-between items-start">
+                                <span class="text-blue-800 text-xs font-bold">Purchase Invoice</span>
+                                <i class="fa-solid fa-file-arrow-down text-blue-600 text-sm"></i>
+                            </div>
+                            <p class="text-[10px] text-gray-500 mt-1">Record supplier purchase</p>
+                            <button onclick="openQuickTx('Purchase')" class="mt-2 text-xs font-semibold bg-blue-600 text-white py-1 rounded-md text-center hover:bg-blue-700 active:scale-95 transition">
+                                + Add
+                            </button>
+                        </div>
+
+                        <!-- Payment In -->
+                        <div class="p-2.5 rounded-xl bg-teal-50/60 border border-teal-100 hover:shadow-md transition flex flex-col justify-between">
+                            <div class="flex justify-between items-start">
+                                <span class="text-teal-800 text-xs font-bold">Payment In</span>
+                                <i class="fa-solid fa-hand-holding-dollar text-teal-600 text-sm"></i>
+                            </div>
+                            <p class="text-[10px] text-gray-500 mt-1">Received from customer</p>
+                            <button onclick="openQuickTx('Payment In')" class="mt-2 text-xs font-semibold bg-teal-600 text-white py-1 rounded-md text-center hover:bg-teal-700 active:scale-95 transition">
+                                + Add
+                            </button>
+                        </div>
+
+                        <!-- Payment Out -->
+                        <div class="p-2.5 rounded-xl bg-rose-50/60 border border-rose-100 hover:shadow-md transition flex flex-col justify-between">
+                            <div class="flex justify-between items-start">
+                                <span class="text-rose-800 text-xs font-bold">Payment Out</span>
+                                <i class="fa-solid fa-money-bill-transfer text-rose-600 text-sm"></i>
+                            </div>
+                            <p class="text-[10px] text-gray-500 mt-1">Paid to supplier</p>
+                            <button onclick="openQuickTx('Payment Out')" class="mt-2 text-xs font-semibold bg-rose-600 text-white py-1 rounded-md text-center hover:bg-rose-700 active:scale-95 transition">
+                                + Add
+                            </button>
+                        </div>
+
+                        <!-- Estimate / Quotation -->
+                        <div class="p-2.5 rounded-xl bg-purple-50/60 border border-purple-100 hover:shadow-md transition flex flex-col justify-between">
+                            <div class="flex justify-between items-start">
+                                <span class="text-purple-800 text-xs font-bold">Estimate / Quote</span>
+                                <i class="fa-solid fa-calculator text-purple-600 text-sm"></i>
+                            </div>
+                            <p class="text-[10px] text-gray-500 mt-1">Send quote to client</p>
+                            <button onclick="openQuickTx('Estimate')" class="mt-2 text-xs font-semibold bg-purple-600 text-white py-1 rounded-md text-center hover:bg-purple-700 active:scale-95 transition">
+                                + Add
+                            </button>
+                        </div>
+
+                        <!-- Sales / Purchase Order -->
+                        <div class="p-2.5 rounded-xl bg-indigo-50/60 border border-indigo-100 hover:shadow-md transition flex flex-col justify-between">
+                            <div class="flex justify-between items-start">
+                                <span class="text-indigo-800 text-xs font-bold">Orders</span>
+                                <i class="fa-solid fa-clipboard-list text-indigo-600 text-sm"></i>
+                            </div>
+                            <p class="text-[10px] text-gray-500 mt-1">Sales & Purchase order</p>
+                            <button onclick="openQuickTx('Order')" class="mt-2 text-xs font-semibold bg-indigo-600 text-white py-1 rounded-md text-center hover:bg-indigo-700 active:scale-95 transition">
+                                + Add
+                            </button>
+                        </div>
+
+                        <!-- Expense -->
+                        <div class="col-span-2 p-2.5 rounded-xl bg-amber-50/60 border border-amber-200 hover:shadow-md transition flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-amber-100 text-amber-700 p-2 rounded-lg">
+                                    <i class="fa-solid fa-receipt text-base"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-amber-900">Record Business Expense</h4>
+                                    <p class="text-[10px] text-amber-700">Rent, Utilities, Chai, Freight, Salary</p>
+                                </div>
+                            </div>
+                            <button onclick="openQuickTx('Expense')" class="px-3 py-1.5 text-xs font-bold bg-amber-600 text-white rounded-md hover:bg-amber-700 transition">
+                                + Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 2: PARTIES & ITEMS (Masters) -->
+                <div class="bg-white rounded-xl p-3 shadow-sm border border-gray-200">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-layer-group text-blue-600"></i> 2) Parties & Items (Masters)
+                        </h3>
+                        <span class="text-[10px] text-gray-400">Master Setup</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <!-- Customer / Buyer -->
+                        <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-gray-800">Customer / Buyer</span>
+                                <i class="fa-solid fa-user-tag text-emerald-600 text-sm"></i>
+                            </div>
+                            <p class="text-[10px] text-gray-500 mt-1">Sundry Debtor</p>
+                            <button onclick="openModal('add-party-modal', 'Customer')" class="mt-2 text-xs font-semibold bg-gray-800 text-white py-1 rounded-md hover:bg-gray-900 transition">
+                                + Add
+                            </button>
+                        </div>
+
+                        <!-- Supplier / Seller -->
+                        <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-gray-800">Supplier / Seller</span>
+                                <i class="fa-solid fa-truck-field text-blue-600 text-sm"></i>
+                            </div>
+                            <p class="text-[10px] text-gray-500 mt-1">Sundry Creditor</p>
+                            <button onclick="openModal('add-party-modal', 'Supplier')" class="mt-2 text-xs font-semibold bg-gray-800 text-white py-1 rounded-md hover:bg-gray-900 transition">
+                                + Add
+                            </button>
+                        </div>
+
+                        <!-- Product / Item -->
+                        <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-gray-800">Product / Item</span>
+                                <i class="fa-solid fa-boxes-stacked text-purple-600 text-sm"></i>
+                            </div>
+                            <p class="text-[10px] text-gray-500 mt-1">Inventory Item</p>
+                            <button onclick="openModal('add-item-modal')" class="mt-2 text-xs font-semibold bg-purple-700 text-white py-1 rounded-md hover:bg-purple-800 transition">
+                                + Add
+                            </button>
+                        </div>
+
+                        <!-- Data Backup & Sync -->
+                        <div onclick="showToast('Cloud Sync Up-to-date! Total 128 records backed up.')" 
+                             class="p-2.5 rounded-xl bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-200 flex flex-col justify-between cursor-pointer hover:shadow-md transition">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-indigo-900">Data Backup</span>
+                                <i class="fa-solid fa-cloud-arrow-up text-indigo-600 text-sm"></i>
+                            </div>
+                            <div class="flex justify-between items-center mt-3">
+                                <span class="text-[10px] text-indigo-600 font-medium">Sync Status</span>
+                                <i class="fa-solid fa-chevron-right text-xs text-indigo-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- TAB 2: ITEMS / PARTIES (WITH SUB-TABS) -->
+            <section id="tab-items-parties" class="space-y-3 hidden">
+                <!-- Primary Toggle Switch -->
+                <div class="grid grid-cols-2 bg-gray-200 p-1 rounded-xl gap-1 text-center font-bold text-xs">
+                    <button id="toggle-btn-items" onclick="switchMasterTab('items')" class="py-2 rounded-lg bg-white shadow-sm text-brand-red transition">
+                        <i class="fa-solid fa-boxes-stacked mr-1"></i> ITEMS
+                    </button>
+                    <button id="toggle-btn-parties" onclick="switchMasterTab('parties')" class="py-2 rounded-lg text-gray-600 hover:text-gray-900 transition">
+                        <i class="fa-solid fa-users mr-1"></i> PARTIES
+                    </button>
+                </div>
+
+                <!-- SUB VIEW: ITEMS MASTER -->
+                <div id="master-items-container" class="space-y-3">
+                    <!-- Items In / Items Out Sub-tabs -->
+                    <div class="flex border-b border-gray-200 bg-white rounded-t-xl px-2 pt-2 justify-around">
+                        <button id="subtab-items-in" onclick="switchItemsSubTab('in')" class="flex-1 pb-2 text-center text-xs font-bold border-b-2 border-emerald-600 text-emerald-700">
+                            <i class="fa-solid fa-arrow-down-left text-emerald-600 mr-1"></i> Items In (Stocked)
+                        </button>
+                        <button id="subtab-items-out" onclick="switchItemsSubTab('out')" class="flex-1 pb-2 text-center text-xs font-bold border-b-2 border-transparent text-gray-500 hover:text-gray-800">
+                            <i class="fa-solid fa-arrow-up-right text-rose-600 mr-1"></i> Items Out (Sold)
+                        </button>
+                    </div>
+
+                    <!-- Add New Item Trigger -->
+                    <div class="flex justify-between items-center px-1">
+                        <span class="text-xs text-gray-500 font-medium" id="items-count-label">Loading stock...</span>
+                        <button onclick="openModal('add-item-modal')" class="bg-brand-red text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow hover:bg-brand-redDark transition flex items-center gap-1">
+                            <i class="fa-solid fa-plus"></i> Add New Product
+                        </button>
+                    </div>
+
+                    <!-- Items List Container -->
+                    <div id="items-list" class="space-y-2">
+                        <!-- Dynamic Item Cards JS -->
+                    </div>
+                </div>
+
+                <!-- SUB VIEW: PARTIES MASTER -->
+                <div id="master-parties-container" class="space-y-3 hidden">
+                    <div class="flex justify-between items-center px-1">
+                        <span class="text-xs text-gray-500 font-medium" id="parties-count-label">Loading parties...</span>
+                        <button onclick="openModal('add-party-modal')" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow hover:bg-blue-700 transition flex items-center gap-1">
+                            <i class="fa-solid fa-user-plus"></i> Add New Party
+                        </button>
+                    </div>
+
+                    <!-- Party Filter -->
+                    <div class="flex gap-2">
+                        <button onclick="filterPartyType('All')" class="party-filter-btn px-2.5 py-1 text-xs font-medium rounded-full bg-gray-800 text-white">All</button>
+                        <button onclick="filterPartyType('Customer')" class="party-filter-btn px-2.5 py-1 text-xs font-medium rounded-full bg-white text-gray-600 border border-gray-200">Customers</button>
+                        <button onclick="filterPartyType('Supplier')" class="party-filter-btn px-2.5 py-1 text-xs font-medium rounded-full bg-white text-gray-600 border border-gray-200">Suppliers</button>
+                    </div>
+
+                    <!-- Parties List Container -->
+                    <div id="parties-list" class="space-y-2">
+                        <!-- Dynamic Party Cards JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: TRANSACTIONS -->
+            <section id="tab-transactions" class="space-y-3 hidden">
+                <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                    <div>
+                        <h2 class="font-bold text-sm text-gray-800">Transaction History</h2>
+                        <p class="text-[10px] text-gray-500">All invoices, vouchers, payments</p>
+                    </div>
+                    <button onclick="openModal('add-tx-modal')" class="bg-brand-red text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow">
+                        + New Entry
+                    </button>
+                </div>
+
+                <!-- Filter Pills -->
+                <div class="flex space-x-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
+                    <button onclick="filterTxType('All')" class="tx-filter-btn px-3 py-1 rounded-lg bg-gray-800 text-white font-medium whitespace-nowrap">All</button>
+                    <button onclick="filterTxType('Sale')" class="tx-filter-btn px-3 py-1 rounded-lg bg-white border border-gray-200 text-gray-600 font-medium whitespace-nowrap">Sale</button>
+                    <button onclick="filterTxType('Purchase')" class="tx-filter-btn px-3 py-1 rounded-lg bg-white border border-gray-200 text-gray-600 font-medium whitespace-nowrap">Purchase</button>
+                    <button onclick="filterTxType('Payment In')" class="tx-filter-btn px-3 py-1 rounded-lg bg-white border border-gray-200 text-gray-600 font-medium whitespace-nowrap">Payment In</button>
+                    <button onclick="filterTxType('Payment Out')" class="tx-filter-btn px-3 py-1 rounded-lg bg-white border border-gray-200 text-gray-600 font-medium whitespace-nowrap">Payment Out</button>
+                    <button onclick="filterTxType('Expense')" class="tx-filter-btn px-3 py-1 rounded-lg bg-white border border-gray-200 text-gray-600 font-medium whitespace-nowrap">Expense</button>
+                </div>
+
+                <!-- Transactions Log List -->
+                <div id="tx-log-list" class="space-y-2">
+                    <!-- Dynamic Transactions JS -->
+                </div>
+            </section>
+
+            <!-- TAB 4: REPORTS -->
+            <section id="tab-reports" class="space-y-3 hidden">
+                <!-- Timeline Filter -->
+                <div class="bg-white p-2 rounded-xl border border-gray-200 flex justify-between items-center text-xs">
+                    <span class="font-bold text-gray-700 ml-1">Period:</span>
+                    <div class="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+                        <button onclick="setReportPeriod('Daily')" class="report-period-btn px-2.5 py-1 rounded font-bold bg-white text-brand-red shadow-sm">Daily</button>
+                        <button onclick="setReportPeriod('Monthly')" class="report-period-btn px-2.5 py-1 rounded font-medium text-gray-600">Monthly</button>
+                        <button onclick="setReportPeriod('Yearly')" class="report-period-btn px-2.5 py-1 rounded font-medium text-gray-600">Yearly</button>
+                    </div>
+                </div>
+
+                <!-- Financial Cards Summary -->
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div class="bg-gradient-to-br from-emerald-500 to-emerald-700 text-white p-3 rounded-xl shadow-sm">
+                        <p class="text-[10px] text-emerald-100 font-medium uppercase">Net Receivables</p>
+                        <h3 class="text-lg font-bold mt-1" id="rep-receivables">₹ 0</h3>
+                        <p class="text-[10px] text-emerald-200 mt-1"><i class="fa-solid fa-arrow-down mr-1"></i>You will get</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-rose-500 to-rose-700 text-white p-3 rounded-xl shadow-sm">
+                        <p class="text-[10px] text-rose-100 font-medium uppercase">Net Payables</p>
+                        <h3 class="text-lg font-bold mt-1" id="rep-payables">₹ 0</h3>
+                        <p class="text-[10px] text-rose-200 mt-1"><i class="fa-solid fa-arrow-up mr-1"></i>You give</p>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                        <p class="text-[10px] text-gray-500 font-medium uppercase">Total Sales</p>
+                        <h3 class="text-base font-bold text-gray-800 mt-1" id="rep-total-sales">₹ 0</h3>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                        <p class="text-[10px] text-gray-500 font-medium uppercase">Est. Net Profit</p>
+                        <h3 class="text-base font-bold text-emerald-600 mt-1" id="rep-net-profit">₹ 0</h3>
+                    </div>
+                </div>
+
+                <!-- Downloadable Statements List -->
+                <div class="bg-white p-3 rounded-xl border border-gray-200 space-y-2">
+                    <h4 class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Available Reports</h4>
+                    <div onclick="showToast('Downloading Sales Report PDF...')" class="flex justify-between items-center p-2.5 rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer transition">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-file-pdf text-red-500 text-base"></i>
+                            <span class="text-xs font-semibold text-gray-700">GSTR-1 Sales Report</span>
+                        </div>
+                        <i class="fa-solid fa-download text-xs text-gray-400"></i>
+                    </div>
+                    <div onclick="showToast('Downloading Stock Summary Excel...')" class="flex justify-between items-center p-2.5 rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer transition">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-file-excel text-emerald-600 text-base"></i>
+                            <span class="text-xs font-semibold text-gray-700">Stock Inventory Valuation</span>
+                        </div>
+                        <i class="fa-solid fa-download text-xs text-gray-400"></i>
+                    </div>
+                    <div onclick="showToast('Downloading Day Book...')" class="flex justify-between items-center p-2.5 rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer transition">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-book-journal-whills text-blue-600 text-base"></i>
+                            <span class="text-xs font-semibold text-gray-700">Daily Cash / Day Book</span>
+                        </div>
+                        <i class="fa-solid fa-download text-xs text-gray-400"></i>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: SUPPORT -->
+            <section id="tab-support" class="space-y-3 hidden">
+                <div class="bg-gradient-to-r from-brand-red to-red-700 text-white p-4 rounded-xl shadow-md">
+                    <h2 class="font-bold text-base">Vyapar Help & Support</h2>
+                    <p class="text-xs text-red-100 mt-0.5">24x7 Customer Care for Indian Businesses</p>
+                    <div class="mt-3 flex items-center space-x-3">
+                        <a href="tel:18001234567" class="bg-white text-brand-red font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 shadow">
+                            <i class="fa-solid fa-phone"></i> 1800-123-4567
+                        </a>
+                        <button onclick="openModal('support-ticket-modal')" class="bg-red-800 text-white font-bold px-3 py-1.5 rounded-lg text-xs border border-red-400">
+                            Create Ticket
+                        </button>
+                    </div>
+                </div>
+
+                <!-- FAQ Accordion -->
+                <div class="bg-white rounded-xl border border-gray-200 p-3 space-y-2">
+                    <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Frequently Asked Questions</h3>
+                    
+                    <details class="group bg-gray-50 rounded-lg p-2.5 cursor-pointer">
+                        <summary class="font-semibold text-xs text-gray-800 flex justify-between items-center">
+                            How to create GST compliant bill?
+                            <i class="fa-solid fa-chevron-down text-xs group-open:rotate-180 transition"></i>
+                        </summary>
+                        <p class="text-[11px] text-gray-600 mt-2 leading-relaxed">
+                            Go to Favourites or Transactions, click + Add on Sale Invoice. Select the buyer party, enter product quantity, and thermal/A4 invoice with GST calculation will generate automatically.
+                        </p>
+                    </details>
+
+                    <details class="group bg-gray-50 rounded-lg p-2.5 cursor-pointer">
+                        <summary class="font-semibold text-xs text-gray-800 flex justify-between items-center">
+                            Is my data safe and backed up?
+                            <i class="fa-solid fa-chevron-down text-xs group-open:rotate-180 transition"></i>
+                        </summary>
+                        <p class="text-[11px] text-gray-600 mt-2 leading-relaxed">
+                            Yes, all offline and online transactions auto-sync securely to encrypted cloud storage whenever network connection is restored.
+                        </p>
+                    </details>
+
+                    <details class="group bg-gray-50 rounded-lg p-2.5 cursor-pointer">
+                        <summary class="font-semibold text-xs text-gray-800 flex justify-between items-center">
+                            How to adjust positive/negative stock?
+                            <i class="fa-solid fa-chevron-down text-xs group-open:rotate-180 transition"></i>
+                        </summary>
+                        <p class="text-[11px] text-gray-600 mt-2 leading-relaxed">
+                            Navigate to Items tab, select "Items In" or "Items Out", click edit on any item to update quantity or record direct purchases and sales.
+                        </p>
+                    </details>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- 3. BOTTOM NAVIGATION BAR (5 TABS) -->
+        <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-gray-200 z-40 px-2 py-1.5 flex justify-around items-center shadow-lg">
+            <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center text-brand-red font-bold text-[10px] space-y-0.5">
+                <i class="fa-solid fa-house-chimney text-base"></i>
+                <span>Home</span>
+            </button>
+            <button onclick="switchTab('items-parties')" id="nav-items-parties" class="flex flex-col items-center text-gray-500 hover:text-gray-800 text-[10px] space-y-0.5">
+                <i class="fa-solid fa-boxes-stacked text-base"></i>
+                <span>Items/Parties</span>
+            </button>
+            <button onclick="switchTab('transactions')" id="nav-transactions" class="flex flex-col items-center text-gray-500 hover:text-gray-800 text-[10px] space-y-0.5">
+                <i class="fa-solid fa-receipt text-base"></i>
+                <span>Transactions</span>
+            </button>
+            <button onclick="switchTab('reports')" id="nav-reports" class="flex flex-col items-center text-gray-500 hover:text-gray-800 text-[10px] space-y-0.5">
+                <i class="fa-solid fa-chart-pie text-base"></i>
+                <span>Reports</span>
+            </button>
+            <button onclick="switchTab('support')" id="nav-support" class="flex flex-col items-center text-gray-500 hover:text-gray-800 text-[10px] space-y-0.5">
+                <i class="fa-solid fa-headset text-base"></i>
+                <span>Support</span>
+            </button>
+        </nav>
+
+        <!-- MODAL 1: ADD TRANSACTION MODAL -->
+        <div id="add-tx-modal" class="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center hidden">
+            <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-4 space-y-3 max-h-[90vh] overflow-y-auto animate-slide-up">
+                <div class="flex justify-between items-center border-b pb-2">
+                    <h3 class="font-bold text-sm text-gray-800" id="tx-modal-title">Create New Transaction</h3>
+                    <button onclick="closeModal('add-tx-modal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                
+                <form id="tx-form" onsubmit="handleSaveTx(event)" class="space-y-3">
+                    <div>
+                        <label class="text-[11px] font-bold text-gray-600">Transaction Type</label>
+                        <select id="tx-type" onchange="updateTxTypeModalFields()" class="w-full text-xs p-2 border border-gray-300 rounded-lg mt-1 focus:ring-1 focus:ring-brand-red">
+                            <option value="Sale">Sale Invoice (+)</option>
+                            <option value="Purchase">Purchase Invoice (-)</option>
+                            <option value="Payment In">Payment In (Receivable)</option>
+                            <option value="Payment Out">Payment Out (Payable)</option>
+                            <option value="Estimate">Estimate / Quotation</option>
+                            <option value="Order">Sales Order</option>
+                            <option value="Expense">Business Expense</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="text-[11px] font-bold text-gray-600">Party / Account</label>
+                        <select id="tx-party" class="w-full text-xs p-2 border border-gray-300 rounded-lg mt-1">
+                            <!-- Populated JS -->
+                        </select>
+                    </div>
+
+                    <div id="tx-item-field-wrapper">
+                        <label class="text-[11px] font-bold text-gray-600">Product / Item</label>
+                        <select id="tx-item" onchange="calcTxTotal()" class="w-full text-xs p-2 border border-gray-300 rounded-lg mt-1">
+                            <!-- Populated JS -->
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2" id="tx-qty-price-group">
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-600">Quantity</label>
+                            <input type="number" id="tx-qty" value="1" min="1" oninput="calcTxTotal()" class="w-full text-xs p-2 border border-gray-300 rounded-lg mt-1">
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-600">Unit Price (₹)</label>
+                            <input type="number" id="tx-price" value="0" min="0" oninput="calcTxTotal()" class="w-full text-xs p-2 border border-gray-300 rounded-lg mt-1">
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-2.5 rounded-lg border border-gray-200 flex justify-between items-center">
+                        <span class="text-xs font-bold text-gray-700">Total Amount:</span>
+                        <span class="text-base font-extrabold text-brand-red" id="tx-calc-total">₹ 0</span>
+                    </div>
+
+                    <button type="submit" class="w-full bg-brand-red text-white py-2 rounded-lg font-bold text-xs shadow hover:bg-brand-redDark transition">
+                        Save Transaction
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL 2: ADD ITEM MODAL -->
+        <div id="add-item-modal" class="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center hidden">
+            <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-4 space-y-3 max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center border-b pb-2">
+                    <h3 class="font-bold text-sm text-gray-800">Add New Item / Product</h3>
+                    <button onclick="closeModal('add-item-modal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                
+                <form onsubmit="handleSaveItem(event)" class="space-y-3">
+                    <div>
+                        <label class="text-[11px] font-bold text-gray-600">Product Name</label>
+                        <input type="text" id="item-name" required placeholder="e.g. Basmati Rice 5kg" class="w-full text-xs p-2 border border-gray-300 rounded-lg mt-1">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-600">Stock Quantity</label>
+                            <input type="number" id="item-qty" required value="10" class="w-full text-xs p-2 border border-gray-300 rounded-lg mt-1">
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-600">Sale Price (₹)</label>
+                            <input type="number" id="item-price" required value="100" class="w-full text-xs p-2 border border-gray-300 rounded-lg mt-1">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-bold text-gray-600">Primary Supplier / Source</label>
+                        <input type="text" id="item-source" placeholder="e.g. Wholesale Trader" class="w-full text-xs p-2 border border-gray-300 rounded-lg mt-1">
+                    </div>
+                    <button type="submit" class="w-full bg-purple-700 text-white py-2 rounded-lg font-bold text-xs shadow hover:bg-purple-800 transition">
+                        Save Item
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL 3: ADD PARTY MODAL -->
+        <div id="add-party-modal" class="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center hidden">
+            <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-4 space-y-3 max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center border-b pb-2">
+                    <h3 class="font-bold text-sm text-gray-800">Add New Customer / Supplier</h3>
+                    <button onclick="closeModal('add-party-modal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                
+                <form onsubmit="handleSaveParty(event)" class="space-y-3">
+                    <div>
+                        <label class="text-[11px] font-bold text-gray-600">Party Type</label>
+                        <select id="party-type" class="w-full text-xs p-2 border border-gray-300 rounded-lg mt-1">
+                            <option value="Customer">Customer / Buyer</option>
+                            <option value="Supplier">Supplier / Seller</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-bold text-gray-600">Party / Business Name</label>
+                        <input type="text" id="party-name" required placeholder="e.g. Ramesh Stores" class="w-full text-xs p-2 border border-gray-300 rounded-lg mt-1">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-bold text-gray-600">Phone Number</label>
+                        <input type="tel" id="party-phone" required placeholder="e.g. 9876543210" class="w-full text-xs p-2 border border-gray-300 rounded-lg mt-1">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-600">Payment Terms</label>
+                            <select id="party-terms" class="w-full text-xs p-2 border border-gray-300 rounded-lg mt-1">
+                                <option value="Cash">Cash on Delivery</option>
+                                <option value="Net 15">Net 15 Days</option>
+                                <option value="Net 30">Net 30 Days</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-600">Opening Balance (₹)</label>
+                            <input type="number" id="party-balance" value="0" class="w-full text-xs p-2 border border-gray-300 rounded-lg mt-1">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg font-bold text-xs shadow hover:bg-blue-700 transition">
+                        Save Party
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL 4: SUPPORT TICKET MODAL -->
+        <div id="support-ticket-modal" class="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center hidden">
+            <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-4 space-y-3">
+                <div class="flex justify-between items-center border-b pb-2">
+                    <h3 class="font-bold text-sm text-gray-800">Submit Support Ticket</h3>
+                    <button onclick="closeModal('support-ticket-modal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                <form onsubmit="handleSupportTicket(event)" class="space-y-3">
+                    <div>
+                        <label class="text-[11px] font-bold text-gray-600">Issue Category</label>
+                        <select class="w-full text-xs p-2 border border-gray-300 rounded-lg mt-1">
+                            <option>Billing & GST Tax</option>
+                            <option>Printer & Bluetooth Hardware</option>
+                            <option>Data Sync / Backup</option>
+                            <option>Account & Subscription</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-bold text-gray-600">Description</label>
+                        <textarea required rows="3" placeholder="Describe issue in detail..." class="w-full text-xs p-2 border border-gray-300 rounded-lg mt-1"></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-brand-red text-white py-2 rounded-lg font-bold text-xs shadow">
+                        Submit Request
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- TOAST NOTIFICATION -->
+        <div id="toast" class="fixed bottom-16 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-4 py-2 rounded-full shadow-lg z-50 opacity-0 transition-opacity duration-300 pointer-events-none flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-emerald-400"></i>
+            <span id="toast-msg">Action performed</span>
+        </div>
+
+    </div>
+
+    <!-- APPLICATION LOGIC JS -->
+    <script>
+        // CORE STATE DATA
+        const state = {
+            items: [
+                { id: 1, name: "Fortune Sunlite Oil 1L", qty: 45, price: 140, source: "Adani Wilmar", date: "2026-10-20", type: "in" },
+                { id: 2, name: "Aashirvaad Atta 10kg", qty: 22, price: 420, source: "ITC Wholesaler", date: "2026-10-21", type: "in" },
+                { id: 3, name: "Tata Salt 1kg", qty: 85, price: 28, source: "Tata Consumer", date: "2026-10-18", type: "in" },
+                { id: 4, name: "Surf Excel 1kg Pack", qty: 12, price: 195, source: "Sharma Enterprises", date: "2026-10-22", type: "out", customer: "Rajesh Traders" },
+                { id: 5, name: "Cadbury Dairy Milk 50g", qty: 30, price: 40, source: "Metro Cash & Carry", date: "2026-10-22", type: "out", customer: "Walk-in Customer" }
+            ],
+            parties: [
+                { id: 101, name: "Sharma Retailers", phone: "9812345678", terms: "Net 15", balance: 14500, type: "Customer" },
+                { id: 102, name: "Gupta Kirana Store", phone: "9876501234", terms: "Cash", balance: -3200, type: "Supplier" },
+                { id: 103, name: "Apex Wholesale Corp", phone: "9988776655", terms: "Net 30", balance: -28000, type: "Supplier" },
+                { id: 104, name: "Anand Traders", phone: "9711223344", terms: "Net 15", balance: 6800, type: "Customer" }
+            ],
+            transactions: [
+                { id: "TX-1001", date: "2026-10-22", type: "Sale", party: "Sharma Retailers", item: "Aashirvaad Atta 10kg", qty: 5, price: 420, total: 2100 },
+                { id: "TX-1002", date: "2026-10-21", type: "Purchase", party: "Apex Wholesale Corp", item: "Fortune Sunlite Oil 1L", qty: 20, price: 135, total: 2700 },
+                { id: "TX-1003", date: "2026-10-21", type: "Payment In", party: "Sharma Retailers", item: "-", qty: 1, price: 5000, total: 5000 },
+                { id: "TX-1004", date: "2026-10-20", type: "Expense", party: "Shop Rent", item: "Monthly Maintenance", qty: 1, price: 8500, total: 8500 }
+            ],
+            activeTab: 'home',
+            masterTab: 'items',
+            itemsSubTab: 'in',
+            partyFilter: 'All',
+            txFilter: 'All',
+            reportPeriod: 'Daily'
+        };
+
+        // INITIALIZATION
+        window.onload = function() {
+            renderItems();
+            renderParties();
+            renderTransactions();
+            renderReports();
+            populateModalDropdowns();
+        };
+
+        // TAB SWITCHING LOGIC
+        function switchTab(tabId) {
+            state.activeTab = tabId;
+            const tabs = ['home', 'items-parties', 'transactions', 'reports', 'support'];
+            
+            tabs.forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                const nav = document.getElementById(`nav-${t}`);
+                if (t === tabId) {
+                    el.classList.remove('hidden');
+                    nav.classList.add('text-brand-red', 'font-bold');
+                    nav.classList.remove('text-gray-500');
+                } else {
+                    el.classList.add('hidden');
+                    nav.classList.remove('text-brand-red', 'font-bold');
+                    nav.classList.add('text-gray-500');
+                }
+            });
+
+            if(tabId === 'reports') renderReports();
+        }
+
+        // MASTER TAB TOGGLE (ITEMS / PARTIES)
+        function switchMasterTab(type) {
+            state.masterTab = type;
+            const btnItems = document.getElementById('toggle-btn-items');
+            const btnParties = document.getElementById('toggle-btn-parties');
+            const containerItems = document.getElementById('master-items-container');
+            const containerParties = document.getElementById('master-parties-container');
+
+            if (type === 'items') {
+                btnItems.className = "py-2 rounded-lg bg-white shadow-sm text-brand-red transition";
+                btnParties.className = "py-2 rounded-lg text-gray-600 hover:text-gray-900 transition";
+                containerItems.classList.remove('hidden');
+                containerParties.classList.add('hidden');
+            } else {
+                btnParties.className = "py-2 rounded-lg bg-white shadow-sm text-blue-600 transition";
+                btnItems.className = "py-2 rounded-lg text-gray-600 hover:text-gray-900 transition";
+                containerParties.classList.remove('hidden');
+                containerItems.classList.add('hidden');
+            }
+        }
+
+        // ITEMS SUB-TAB (ITEMS IN / ITEMS OUT)
+        function switchItemsSubTab(sub) {
+            state.itemsSubTab = sub;
+            const tabIn = document.getElementById('subtab-items-in');
+            const tabOut = document.getElementById('subtab-items-out');
+
+            if (sub === 'in') {
+                tabIn.className = "flex-1 pb-2 text-center text-xs font-bold border-b-2 border-emerald-600 text-emerald-700";
+                tabOut.className = "flex-1 pb-2 text-center text-xs font-bold border-b-2 border-transparent text-gray-500 hover:text-gray-800";
+            } else {
+                tabOut.className = "flex-1 pb-2 text-center text-xs font-bold border-b-2 border-rose-600 text-rose-700";
+                tabIn.className = "flex-1 pb-2 text-center text-xs font-bold border-b-2 border-transparent text-gray-500 hover:text-gray-800";
+            }
+            renderItems();
+        }
+
+        // RENDER ITEMS (ITEMS IN / ITEMS OUT)
+        function renderItems() {
+            const listEl = document.getElementById('items-list');
+            const countLabel = document.getElementById('items-count-label');
+            const filtered = state.items.filter(item => item.type === state.itemsSubTab);
+
+            countLabel.innerText = `Total ${filtered.length} products listed`;
+            listEl.innerHTML = '';
+
+            if (filtered.length === 0) {
+                listEl.innerHTML = `<div class="bg-white p-6 rounded-xl text-center text-xs text-gray-400 border border-dashed">No items found in this section.</div>`;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const totalVal = item.qty * item.price;
+                const card = document.createElement('div');
+                card.className = "bg-white p-3 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between";
+                card.innerHTML = `
+                    <div class="space-y-0.5">
+                        <div class="flex items-center space-x-2">
+                            <h4 class="font-bold text-xs text-gray-800">${item.name}</h4>
+                            <span class="text-[9px] px-1.5 py-0.2 rounded ${item.type === 'in' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'} font-semibold">
+                                ${item.type === 'in' ? 'Stock In' : 'Stock Out'}
+                            </span>
+                        </div>
+                        <p class="text-[10px] text-gray-500">
+                            ${item.type === 'in' ? 'Supplier: ' + (item.source || 'General') : 'Customer: ' + (item.customer || 'Counter Sale')} | Date: ${item.date}
+                        </p>
+                        <p class="text-[11px] font-semibold text-gray-700">
+                            Qty: <span class="text-brand-blue">${item.qty}</span> | Price: ₹${item.price.toLocaleString('en-IN')}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs font-extrabold text-gray-900">₹${totalVal.toLocaleString('en-IN')}</div>
+                        <div class="flex space-x-1 mt-1.5 justify-end">
+                            <button onclick="deleteItem(${item.id})" class="p-1 text-gray-400 hover:text-red-600 text-xs"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+                listEl.appendChild(card);
+            });
+        }
+
+        // RENDER PARTIES
+        function filterPartyType(type) {
+            state.partyFilter = type;
+            document.querySelectorAll('.party-filter-btn').forEach(btn => {
+                if(btn.innerText.includes(type)) {
+                    btn.className = "party-filter-btn px-2.5 py-1 text-xs font-medium rounded-full bg-gray-800 text-white";
+                } else {
+                    btn.className = "party-filter-btn px-2.5 py-1 text-xs font-medium rounded-full bg-white text-gray-600 border border-gray-200";
+                }
+            });
+            renderParties();
+        }
+
+        function renderParties() {
+            const listEl = document.getElementById('parties-list');
+            const countLabel = document.getElementById('parties-count-label');
+            const filtered = state.partyFilter === 'All' 
+                ? state.parties 
+                : state.parties.filter(p => p.type === state.partyFilter);
+
+            countLabel.innerText = `${filtered.length} Parties Listed`;
+            listEl.innerHTML = '';
+
+            filtered.forEach(p => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-3 rounded-xl border border-gray-200 shadow-sm flex justify-between items-center";
+                const isReceivable = p.balance >= 0;
+                card.innerHTML = `
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <h4 class="font-bold text-xs text-gray-800">${p.name}</h4>
+                            <span class="text-[9px] px-1.5 py-0.2 rounded ${p.type === 'Customer' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'} font-semibold">${p.type}</span>
+                        </div>
+                        <p class="text-[10px] text-gray-500"><i class="fa-solid fa-phone text-[9px] mr-1"></i>${p.phone} | Terms: ${p.terms}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[10px] font-medium text-gray-400">${isReceivable ? 'Receivable' : 'Payable'}</span>
+                        <p class="text-xs font-extrabold ${isReceivable ? 'text-emerald-600' : 'text-rose-600'}">
+                            ₹${Math.abs(p.balance).toLocaleString('en-IN')}
+                        </p>
+                        <button onclick="deleteParty(${p.id})" class="text-[10px] text-gray-400 hover:text-red-500 mt-1"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+                listEl.appendChild(card);
+            });
+        }
+
+        // RENDER TRANSACTIONS LOG
+        function filterTxType(type) {
+            state.txFilter = type;
+            document.querySelectorAll('.tx-filter-btn').forEach(btn => {
+                if(btn.innerText.includes(type)) {
+                    btn.className = "tx-filter-btn px-3 py-1 rounded-lg bg-gray-800 text-white font-medium whitespace-nowrap";
+                } else {
+                    btn.className = "tx-filter-btn px-3 py-1 rounded-lg bg-white border border-gray-200 text-gray-600 font-medium whitespace-nowrap";
+                }
+            });
+            renderTransactions();
+        }
+
+        function renderTransactions() {
+            const listEl = document.getElementById('tx-log-list');
+            const filtered = state.txFilter === 'All' 
+                ? state.transactions 
+                : state.transactions.filter(t => t.type === state.txFilter);
+
+            listEl.innerHTML = '';
+            if (filtered.length === 0) {
+                listEl.innerHTML = `<div class="bg-white p-6 rounded-xl text-center text-xs text-gray-400 border border-dashed">No transactions recorded yet.</div>`;
+                return;
+            }
+
+            filtered.forEach(tx => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-3 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between";
+                let badgeClass = "bg-gray-100 text-gray-700";
+                if(tx.type === 'Sale') badgeClass = "bg-emerald-100 text-emerald-800";
+                if(tx.type === 'Purchase') badgeClass = "bg-blue-100 text-blue-800";
+                if(tx.type === 'Expense') badgeClass = "bg-amber-100 text-amber-800";
+
+                card.innerHTML = `
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-[9px] font-bold px-2 py-0.5 rounded-full ${badgeClass}">${tx.type}</span>
+                            <span class="text-xs font-bold text-gray-800">${tx.party}</span>
+                        </div>
+                        <p class="text-[10px] text-gray-500">Item: ${tx.item} | Qty: ${tx.qty} | Date: ${tx.date}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-extrabold text-gray-900">₹${tx.total.toLocaleString('en-IN')}</span>
+                        <div class="text-[9px] text-emerald-600 font-semibold"><i class="fa-solid fa-circle-check text-[8px] mr-0.5"></i> Paid</div>
+                    </div>
+                `;
+                listEl.appendChild(card);
+            });
+        }
+
+        // RENDER REPORTS SUMMARY
+        function setReportPeriod(p) {
+            state.reportPeriod = p;
+            document.querySelectorAll('.report-period-btn').forEach(btn => {
+                if(btn.innerText === p) {
+                    btn.className = "report-period-btn px-2.5 py-1 rounded font-bold bg-white text-brand-red shadow-sm";
+                } else {
+                    btn.className = "report-period-btn px-2.5 py-1 rounded font-medium text-gray-600";
+                }
+            });
+            renderReports();
+        }
+
+        function renderReports() {
+            let totalReceivable = state.parties.filter(p => p.balance > 0).reduce((acc, p) => acc + p.balance, 0);
+            let totalPayable = state.parties.filter(p => p.balance < 0).reduce((acc, p) => acc + Math.abs(p.balance), 0);
+            let totalSales = state.transactions.filter(t => t.type === 'Sale').reduce((acc, t) => acc + t.total, 0);
+            let totalExpense = state.transactions.filter(t => t.type === 'Expense').reduce((acc, t) => acc + t.total, 0);
+
+            document.getElementById('rep-receivables').innerText = `₹ ${totalReceivable.toLocaleString('en-IN')}`;
+            document.getElementById('rep-payables').innerText = `₹ ${totalPayable.toLocaleString('en-IN')}`;
+            document.getElementById('rep-total-sales').innerText = `₹ ${totalSales.toLocaleString('en-IN')}`;
+            document.getElementById('rep-net-profit').innerText = `₹ ${(totalSales - totalExpense).toLocaleString('en-IN')}`;
+        }
+
+        // MODAL MANAGEMENT & FORM HANDLERS
+        function openModal(id, defaultPartyType) {
+            document.getElementById(id).classList.remove('hidden');
+            if (id === 'add-party-modal' && defaultPartyType) {
+                document.getElementById('party-type').value = defaultPartyType;
+            }
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function openQuickTx(txType) {
+            document.getElementById('tx-type').value = txType;
+            updateTxTypeModalFields();
+            openModal('add-tx-modal');
+        }
+
+        function populateModalDropdowns() {
+            const partySelect = document.getElementById('tx-party');
+            const itemSelect = document.getElementById('tx-item');
+
+            partySelect.innerHTML = state.parties.map(p => `<option value="${p.name}">${p.name} (${p.type})</option>`).join('') + `<option value="Cash Sale / General">Cash / Counter Client</option>`;
+            itemSelect.innerHTML = state.items.map(i => `<option value="${i.name}" data-price="${i.price}">${i.name} (₹${i.price})</option>`).join('');
+
+            calcTxTotal();
+        }
+
+        function updateTxTypeModalFields() {
+            const type = document.getElementById('tx-type').value;
+            document.getElementById('tx-modal-title').innerText = `Create ${type} Entry`;
+        }
+
+        function calcTxTotal() {
+            const qty = parseFloat(document.getElementById('tx-qty').value) || 0;
+            const price = parseFloat(document.getElementById('tx-price').value) || 0;
+            document.getElementById('tx-calc-total').innerText = `₹ ${(qty * price).toLocaleString('en-IN')}`;
+        }
+
+        function handleSaveTx(e) {
+            e.preventDefault();
+            const type = document.getElementById('tx-type').value;
+            const party = document.getElementById('tx-party').value;
+            const item = document.getElementById('tx-item').value;
+            const qty = parseFloat(document.getElementById('tx-qty').value) || 1;
+            const price = parseFloat(document.getElementById('tx-price').value) || 0;
+            const total = qty * price;
+
+            state.transactions.unshift({
+                id: `TX-${1000 + state.transactions.length + 1}`,
+                date: new Date().toISOString().split('T')[0],
+                type, party, item, qty, price, total
+            });
+
+            closeModal('add-tx-modal');
+            renderTransactions();
+            showToast('Transaction saved successfully!');
+        }
+
+        function handleSaveItem(e) {
+            e.preventDefault();
+            const name = document.getElementById('item-name').value;
+            const qty = parseFloat(document.getElementById('item-qty').value);
+            const price = parseFloat(document.getElementById('item-price').value);
+            const source = document.getElementById('item-source').value;
+
+            state.items.unshift({
+                id: Date.now(),
+                name, qty, price, source,
+                date: new Date().toISOString().split('T')[0],
+                type: 'in'
+            });
+
+            closeModal('add-item-modal');
+            populateModalDropdowns();
+            renderItems();
+            showToast('New Product added!');
+        }
+
+        function handleSaveParty(e) {
+            e.preventDefault();
+            const type = document.getElementById('party-type').value;
+            const name = document.getElementById('party-name').value;
+            const phone = document.getElementById('party-phone').value;
+            const terms = document.getElementById('party-terms').value;
+            const balance = parseFloat(document.getElementById('party-balance').value) || 0;
+
+            state.parties.unshift({
+                id: Date.now(),
+                name, phone, terms, balance, type
+            });
+
+            closeModal('add-party-modal');
+            populateModalDropdowns();
+            renderParties();
+            showToast('Party profile saved!');
+        }
+
+        function handleSupportTicket(e) {
+            e.preventDefault();
+            closeModal('support-ticket-modal');
+            showToast('Support ticket #9021 submitted!');
+        }
+
+        function deleteItem(id) {
+            state.items = state.items.filter(i => i.id !== id);
+            renderItems();
+            populateModalDropdowns();
+            showToast('Item deleted.');
+        }
+
+        function deleteParty(id) {
+            state.parties = state.parties.filter(p => p.id !== id);
+            renderParties();
+            populateModalDropdowns();
+            showToast('Party deleted.');
+        }
+
+        function handleGlobalSearch() {
+            const query = document.getElementById('global-search').value.toLowerCase();
+            if (!query) return;
+            showToast(`Searching for: "${query}"`);
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('opacity-0');
+            toast.classList.add('opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0');
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
